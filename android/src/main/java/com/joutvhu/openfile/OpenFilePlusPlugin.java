@@ -39,7 +39,7 @@ import io.flutter.plugin.common.PluginRegistry;
  * OpenFilePlusPlugin
  */
 public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware,
-    PluginRegistry.RequestPermissionsResultListener, PluginRegistry.ActivityResultListener {
+        PluginRegistry.RequestPermissionsResultListener, PluginRegistry.ActivityResultListener {
     private static final int REQUEST_CODE = 33432;
     private static final int RESULT_CODE = 0x12;
     private static final String TYPE_PREFIX_IMAGE = "image/";
@@ -47,9 +47,11 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
     private static final String TYPE_PREFIX_AUDIO = "audio/";
     private static final String TYPE_STRING_APK = "application/vnd.android.package-archive";
 
-    /// The MethodChannel that will the communication between Flutter and native Android
+    /// The MethodChannel that will the communication between Flutter and native
+    /// Android
     ///
-    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+    /// This local reference serves to register the plugin with the Flutter Engine
+    /// and unregister it
     /// when the Flutter Engine is detached from the Activity
     private MethodChannel channel;
 
@@ -61,17 +63,6 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
     private String typeString;
 
     private boolean isResultSubmitted = false;
-
-    @Deprecated
-    public static void registerWith(PluginRegistry.Registrar registrar) {
-        OpenFilePlusPlugin plugin = new OpenFilePlusPlugin();
-        plugin.activity = registrar.activity();
-        plugin.context = registrar.context();
-        plugin.channel = new MethodChannel(registrar.messenger(), "open_file");
-        plugin.channel.setMethodCallHandler(plugin);
-        registrar.addRequestPermissionsResultListener(plugin);
-        registrar.addActivityResultListener(plugin);
-    }
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -124,23 +115,27 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (typeStartsWith(TYPE_PREFIX_IMAGE, typeString)) {
                 if (!hasPermission(Manifest.permission.READ_MEDIA_IMAGES)) {
-                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_CODE);
+                    ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.READ_MEDIA_IMAGES },
+                            REQUEST_CODE);
                     return false;
                 }
             } else if (typeStartsWith(TYPE_PREFIX_VIDEO, typeString)) {
                 if (!hasPermission(Manifest.permission.READ_MEDIA_VIDEO)) {
-                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_MEDIA_VIDEO}, REQUEST_CODE);
+                    ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.READ_MEDIA_VIDEO },
+                            REQUEST_CODE);
                     return false;
                 }
             } else if (typeStartsWith(TYPE_PREFIX_AUDIO, typeString)) {
                 if (!hasPermission(Manifest.permission.READ_MEDIA_AUDIO)) {
-                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_MEDIA_AUDIO}, REQUEST_CODE);
+                    ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.READ_MEDIA_AUDIO },
+                            REQUEST_CODE);
                     return false;
                 }
             }
         } else {
             if (!hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+                ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE },
+                        REQUEST_CODE);
                 return false;
             }
         }
@@ -158,16 +153,16 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
     private boolean isMediaStorePath() {
         boolean isMediaStorePath = false;
         String[] mediaStorePath = {
-            "/DCIM/",
-            "/Pictures/",
-            "/Movies/",
-            "/Alarms/",
-            "/Audiobooks/",
-            "/Music/",
-            "/Notifications/",
-            "/Podcasts/",
-            "/Ringtones/",
-            "/Download/"
+                "/DCIM/",
+                "/Pictures/",
+                "/Movies/",
+                "/Alarms/",
+                "/Audiobooks/",
+                "/Music/",
+                "/Notifications/",
+                "/Podcasts/",
+                "/Ringtones/",
+                "/Download/"
         };
         for (String s : mediaStorePath) {
             if (filePath.contains(s)) {
@@ -187,7 +182,8 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
             String appDirCanonicalPath = new File(context.getApplicationInfo().dataDir).getCanonicalPath();
             String extCanonicalPath = context.getExternalFilesDir(null).getCanonicalPath();
             String fileCanonicalPath = new File(filePath).getCanonicalPath();
-            return !(fileCanonicalPath.startsWith(appDirCanonicalPath) || fileCanonicalPath.startsWith(extCanonicalPath));
+            return !(fileCanonicalPath.startsWith(appDirCanonicalPath)
+                    || fileCanonicalPath.startsWith(extCanonicalPath));
         } catch (IOException e) {
             e.printStackTrace();
             return true;
@@ -221,7 +217,8 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             String packageName = context.getPackageName();
-            Uri uri = FileProvider.getUriForFile(context, packageName + ".fileProvider.com.joutvhu.openfile", new File(filePath));
+            Uri uri = FileProvider.getUriForFile(context, packageName + ".fileProvider.com.joutvhu.openfile",
+                    new File(filePath));
             intent.setDataAndType(uri, typeString);
         } else {
             intent.setDataAndType(Uri.fromFile(new File(filePath)), typeString);
@@ -393,10 +390,9 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
                 }
             } else {
                 ActivityCompat.requestPermissions(
-                    activity,
-                    new String[]{Manifest.permission.REQUEST_INSTALL_PACKAGES},
-                    REQUEST_CODE
-                );
+                        activity,
+                        new String[] { Manifest.permission.REQUEST_INSTALL_PACKAGES },
+                        REQUEST_CODE);
             }
         } else {
             startActivity();
@@ -428,8 +424,10 @@ public class OpenFilePlusPlugin implements FlutterPlugin, MethodCallHandler, Act
 
     @Override
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public boolean onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode != REQUEST_CODE) return false;
+    public boolean onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        if (requestCode != REQUEST_CODE)
+            return false;
         if (hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && TYPE_STRING_APK.equals(typeString)) {
             openApkFile();
             return false;
